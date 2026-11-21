@@ -8,9 +8,11 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    WebAppInfo,
 )
 
 TOKEN = os.getenv("BOT_TOKEN")
+APP_URL = "https://mironbog.github.io/worthy-app/"
 
 # Каждый вопрос: текст и 5 вариантов (текст кнопки, баллы 4..0).
 # 4 = самый сильный аргумент "за" покупку, 0 = самый слабый.
@@ -79,6 +81,12 @@ sessions: dict[int, dict] = {}
 dp = Dispatcher()
 
 
+def app_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text="🛍 Открыть Worthy", web_app=WebAppInfo(url=APP_URL))
+    ]])
+
+
 def keyboard(step: int) -> InlineKeyboardMarkup:
     _, options = QUESTIONS[step]
     rows = [
@@ -134,8 +142,14 @@ async def start(message: Message):
         "Йоу! Я Worthy 👋\n\n"
         "Скажу честно, стоит ли твоя покупка денег. "
         f"{len(QUESTIONS)} коротких вопросов, пара минут, и в конце вердикт без воды.\n\n"
-        "Что-то приглянулось? Жми /buy"
+        "Открой приложение кнопкой ниже или жми /buy, чтобы пройти вопросы прямо в чате.",
+        reply_markup=app_keyboard(),
     )
+
+
+@dp.message(Command("app"))
+async def app(message: Message):
+    await message.answer("Worthy в приложении 👇", reply_markup=app_keyboard())
 
 
 @dp.message(Command("buy"))
